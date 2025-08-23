@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        SUITECRM_VERSION: ${SUITECRM_VERSION:-8.7.1}
+    image: suitecrm-app:${SUITECRM_VERSION:-8.7.1}
+    environment:
+      - TZ=America/Jamaica
+    volumes:
+      - suitecrm_legacy:/var/www/html/public/legacy
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+
+  cron:
+    image: suitecrm-app:${SUITECRM_VERSION:-8.7.1}
+    depends_on:
+      - app
+    volumes:
+      - suitecrm_legacy:/var/www/html/public/legacy
+    entrypoint: [ "bash", "-lc", "while true; do php -f /var/www/html/public/legacy/cron.php >/proc/1/fd/1 2>&1; sleep 60; done" ]
+
+  db:
+    image: mariadb:10.6
+    environment:
+      - MYSQL_DATABASE=${DB_NAME:-suitecrm}
+      - MYSQL_USER=${DB_USER:-suitecrm}
+      - MYSQL_PASSWORD=${DB_PASSWORD:-changeme}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-changemeroot}
+      - TZ=America/Jamaica
+    volumes:
+      - db_data:/var/lib/mysql
+    command: ["mysqld", "--innodb_file_per_table=1", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+
+volumes:
+  suitecrm_legacy:
+  db_data:
