@@ -5,8 +5,8 @@ services:
     build:
       context: .
       args:
-        SUITECRM_VERSION: ${SUITECRM_VERSION:-8.7.1}
-    image: suitecrm-app:${SUITECRM_VERSION:-8.7.1}
+        SUITECRM_VERSION: ${SUITECRM_VERSION:-8.8.1}
+    image: suitecrm-app:${SUITECRM_VERSION:-8.8.1}
     environment:
       - TZ=America/Jamaica
     volumes:
@@ -20,7 +20,7 @@ services:
       retries: 10
 
   cron:
-    image: suitecrm-app:${SUITECRM_VERSION:-8.7.1}
+    image: suitecrm-app:${SUITECRM_VERSION:-8.8.1}
     depends_on:
       - app
     volumes:
